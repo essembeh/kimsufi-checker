@@ -1,6 +1,6 @@
 # Kimsufi Checker
 
-Tool to chack [Kimsufi (OVH)](https://www.kimsufi.com) availability and execute actions when a plan is available or not available.
+Tool to check [Kimsufi (OVH)](https://www.kimsufi.com) availability and execute actions when a plan is available or not available.
 
 # Install
 
@@ -35,7 +35,24 @@ optional arguments:
 
 # Example
 
-If you want to be notified by SMS using the Freemobile SMS API when plans *1801sk13* or *1801sk14* are available in France or Canada by checking every 10 minutes, uses:
+To list all plan identifiers and all zone identifiers, use `kimsufi-checker` without argument
+```sh 
+$ kimsufi-checker 
+List of plans:
+  150cagame1
+  150cagame2
+  150game1
+  150game2
+  1623hardzone1
+[...]
+List of zones:
+  bhs
+  fra
+  gra
+[...]
+```
+
+If you want to be notified by SMS using the Free Mobile SMS API when plans *1801sk13* or *1801sk14* are available in France or Canada by checking every 10 minutes, use this command:
 
 ```sh
 $ kimsufi-checker \
@@ -47,4 +64,4 @@ $ kimsufi-checker \
     1801sk13 1801sk14
 ```
 
-> Note: replace `123456789` and `MYPASSWORD` with your own Freemobile credentials 
+> Note: replace `123456789` and `MYPASSWORD` with your own  [Free Mobile credentials](https://mobile.free.fr/moncompte/index.php?page=options).
