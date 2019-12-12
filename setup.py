@@ -18,7 +18,7 @@ setup(
     long_description_content_type="text/markdown",
     use_scm_version={"version_scheme": "post-release"},
     setup_requires=["setuptools_scm"],
-    install_requires=["pytput"],
+    install_requires=["pytput", "requests"],
     package_dir={"": "src"},
     packages=["kimsufichecker"],
     entry_points={"console_scripts": ["kimsufi-checker = kimsufichecker.__main__:main"]},
