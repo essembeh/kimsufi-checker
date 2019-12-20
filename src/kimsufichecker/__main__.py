@@ -6,7 +6,7 @@ from datetime import datetime
 from time import sleep
 
 import requests
-from pytput import print_color
+from pytput import Style
 
 URL_API = (
     "https://www.kimsufi.com/fr/js/dedicatedAvailability/availability-data-ca.json"
@@ -25,19 +25,21 @@ def execute(command: str, plan: str):
             p = subprocess.run(
                 cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
-            print_color(
-                "yellow",
-                "[{date}] Command {cmd} exited with {p.returncode}".format(
-                    date=now(), cmd=command, p=p
+            print(
+                Style.YELLOW.apply(
+                    "[{date}] Command {cmd} exited with {p.returncode}".format(
+                        date=now(), cmd=command, p=p
+                    )
                 ),
                 flush=True,
             )
             return p.returncode
         except BaseException as e:
-            print_color(
-                "red",
-                "[{date}] Disabling command {cmd} because of error: {txt}".format(
-                    date=now(), cmd=command, txt=str(e)
+            print(
+                Style.RED.apply(
+                    "[{date}] Disabling command {cmd} because of error: {txt}".format(
+                        date=now(), cmd=command, txt=str(e)
+                    )
                 ),
                 flush=True,
             )
@@ -130,16 +132,17 @@ def main():
                     availability[plan] = current_zones
                     if previous_zones is None:
                         # No previous data
-                        print_color("cyan", ".", flush=True, end="")
+                        print(Style.BLUE.apply("."), flush=True, end="")
                     elif previous_zones == current_zones:
                         # No change
-                        print_color("green", ".", flush=True, end="")
+                        print(Style.GREEN.apply("."), flush=True, end="")
                     elif len(current_zones) == 0:
                         # Not available anymore
-                        print_color(
-                            "purple",
-                            "\n[{date}] Plan {plan} is not available anymore".format(
-                                date=now(), plan=plan
+                        print(
+                            Style.PURPLE.apply(
+                                "\n[{date}] Plan {plan} is not available anymore".format(
+                                    date=now(), plan=plan
+                                )
                             ),
                             flush=True,
                         )
@@ -147,10 +150,11 @@ def main():
                             args.not_available = None
                     else:
                         # Becomes available
-                        print_color(
-                            "green",
-                            "\n[{date}] Plan {plan} is available".format(
-                                date=now(), plan=plan
+                        print(
+                            Style.GREEN.apply(
+                                "\n[{date}] Plan {plan} is available".format(
+                                    date=now(), plan=plan
+                                )
                             ),
                             flush=True,
                         )
@@ -159,9 +163,8 @@ def main():
             except KeyboardInterrupt:
                 break
             except BaseException as e:
-                print_color(
-                    "red",
-                    "\n[{date}] Error: {txt}".format(date=now(), txt=str(e)),
+                print(
+                    Style.RED.apply("\n[{date}] Error: {e}".format(date=now(), e=e)),
                     flush=True,
                 )
 

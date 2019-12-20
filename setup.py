@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 def readfile(file):
     with open(file) as f:
         return f.read()
+
+
+def readlines(file):
+    return [
+        line
+        for line in map(str.strip, readfile(file).splitlines())
+        if not line.startswith("#")
+    ]
 
 
 setup(
@@ -16,12 +24,14 @@ setup(
     description="Command line tool to monitor Kimsufi plans availability",
     long_description=readfile("README.md"),
     long_description_content_type="text/markdown",
-    use_scm_version={"version_scheme": "post-release"},
     setup_requires=["setuptools_scm"],
-    install_requires=["pytput", "requests"],
+    use_scm_version={"version_scheme": "post-release"},
+    install_requires=readlines("requirements.txt"),
     package_dir={"": "src"},
-    packages=["kimsufichecker"],
-    entry_points={"console_scripts": ["kimsufi-checker = kimsufichecker.__main__:main"]},
+    packages=find_packages("src"),
+    entry_points={
+        "console_scripts": ["kimsufi-checker = kimsufichecker.__main__:main"]
+    },
     classifiers=[
         "Development Status :: 4 - Beta",
         "Topic :: Utilities",

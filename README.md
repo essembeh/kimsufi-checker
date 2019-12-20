@@ -5,7 +5,7 @@ Tool to check [Kimsufi (OVH)](https://www.kimsufi.com) availability and execute 
 # Install
 
 ```sh
-$ pip install --user git+https://github.com/essembeh/kimsufi-checker
+$ pip3 install --user git+https://github.com/essembeh/kimsufi-checker
 $ kimsufi-chercker --help
 ```
 
