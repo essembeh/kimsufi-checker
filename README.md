@@ -6,13 +6,13 @@ Tool to check [Kimsufi (OVH)](https://www.kimsufi.com) availability and execute 
 
 ```sh
 $ pip3 install --user git+https://github.com/essembeh/kimsufi-checker
-$ kimsufi-chercker --help
+$ kimsufi-checker --help
 ```
 
 # Usage
 
 ```sh
-$ kimsufi-chercker --help
+$ kimsufi-checker --help
 usage: kimsufi-checker [-h] [-s SECONDS] [-z ZONE] [-x COMMAND] [-X COMMAND]
                        [plans [plans ...]]
 
