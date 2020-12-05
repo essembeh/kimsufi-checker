@@ -4,9 +4,30 @@ Tool to check [Kimsufi (OVH)](https://www.kimsufi.com) availability and execute 
 
 # Install
 
+To install *Kimsufi Checker* from [PyPI](https://pypi.org/project/kimsufichecker/) simply run
 ```sh
+$ pip3 install -U --user kimsufichecker
+$ kimsufi-checker --help
+```
+
+To install it from the git repository, ensure you installed *Poetry* first:
+```sh
+$ pip3 install -U --user poetry
 $ pip3 install --user git+https://github.com/essembeh/kimsufi-checker
 $ kimsufi-checker --help
+```
+
+To install it in a *virtualenv*
+```
+$ pip3 install -U --user poetry
+$ git clone https://github.com/essembeh/kimsufi-checker
+$ cd kimsufi-checker
+$ poetry install
+
+$ poetry run kimsufi-checker --help
+--or--
+$ poetry shell
+(.venv) $ kimsufi-checker --help
 ```
 
 # Usage
@@ -14,6 +35,7 @@ $ kimsufi-checker --help
 ```sh
 $ kimsufi-checker --help
 usage: kimsufi-checker [-h] [-s SECONDS] [-z ZONE] [-x COMMAND] [-X COMMAND]
+                       [-1]
                        [plans [plans ...]]
 
 tool to perform actions when Kimsufi availabilty changes
@@ -24,13 +46,17 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -s SECONDS, --sleep SECONDS
-                        Duration (in seconds) between checks, default: 60
+                        duration (in seconds) between checks, default: 60
   -z ZONE, --zone ZONE  check availability in specific zones (example: rbx or
                         gra)
   -x COMMAND, --available COMMAND
                         command to execute when plan becomes available
   -X COMMAND, --not-available COMMAND
                         command to execute when plan is not available anymore
+  -1, --execute-on-init
+                        execute -x/-X action on first check, by default
+                        actions are run when plan status change
+
 ```
 
 # Example
@@ -64,4 +90,4 @@ $ kimsufi-checker \
     1801sk13 1801sk14
 ```
 
-> Note: replace `123456789` and `MYPASSWORD` with your own  [Free Mobile credentials](https://mobile.free.fr/moncompte/index.php?page=options).
+> Note: replace `123456789` and `MYPASSWORD` with your own [Free Mobile credentials](https://mobile.free.fr/moncompte/index.php?page=options).

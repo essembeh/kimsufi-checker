@@ -1,12 +1,14 @@
+"""
+kimsufichecker - cli
+"""
 import shlex
 import subprocess
 from argparse import ArgumentParser
 from collections import OrderedDict
 from datetime import datetime
 from time import sleep
-
 import requests
-from pytput import Style
+from colorama import Fore
 
 URL_API = (
     "https://www.kimsufi.com/fr/js/dedicatedAvailability/availability-data-ca.json"
@@ -14,6 +16,9 @@ URL_API = (
 
 
 def now():
+    """
+    return the current date as string
+    """
     return datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -22,34 +27,34 @@ def execute(command: str, plan: str):
         try:
             command = command.format(plan=plan)
             cmd = shlex.split(command)
-            p = subprocess.run(
-                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            process = subprocess.run(
+                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False
             )
-            print(
-                Style.YELLOW.apply(
-                    "[{date}] Command {cmd} exited with {p.returncode}".format(
-                        date=now(), cmd=command, p=p
-                    )
-                ),
-                flush=True,
+            message(
+                Fore.CYAN,
+                f"Command '{command}' exited with {process.returncode}",
+                prefix="",
             )
-            return p.returncode
-        except BaseException as e:
-            print(
-                Style.RED.apply(
-                    "[{date}] Disabling command {cmd} because of error: {txt}".format(
-                        date=now(), cmd=command, txt=str(e)
-                    )
-                ),
-                flush=True,
+            return process.returncode
+        except BaseException as e:  # pylint: disable=broad-except,invalid-name
+            message(
+                Fore.RED,
+                f"Disabling command '{command}'' because of error: {e}",
+                prefix="",
             )
 
 
 def get_data() -> dict:
+    """
+    get the json payload from kimsufi API
+    """
     return requests.get(URL_API).json()
 
 
 def get_available_zones(data: dict, plan: str, filter_zones: list) -> list:
+    """
+    find available zones in payload
+    """
     for item in data["availability"]:
         if item["reference"] == plan:
             return sorted(
@@ -63,10 +68,30 @@ def get_available_zones(data: dict, plan: str, filter_zones: list) -> list:
                     ],
                 )
             )
-    raise ValueError("Cannot find plan: " + plan)
+    raise ValueError(f"Cannot find plan: {plan}")
 
 
-def main():
+def dot(color):
+    """
+    print a dot with given color
+    """
+    print(f"{color}.{Fore.RESET}", flush=True, end="")
+
+
+def message(color, msg: str, prefix: str = "\n"):
+    """
+    print a message with a color and the date
+    """
+    print(
+        f"{prefix}{color}[{now()}] {msg}{Fore.RESET}",
+        flush=True,
+    )
+
+
+def run():
+    """
+    entrypoint
+    """
     parser = ArgumentParser(
         "kimsufi-checker",
         description="tool to perform actions when Kimsufi availabilty changes",
@@ -77,7 +102,7 @@ def main():
         metavar="SECONDS",
         type=int,
         default=60,
-        help="Duration (in seconds) between checks, default: 60",
+        help="duration (in seconds) between checks, default: 60",
     )
     parser.add_argument(
         "-z",
@@ -100,6 +125,12 @@ def main():
         help="command to execute when plan is not available anymore",
     )
     parser.add_argument(
+        "-1",
+        "--execute-on-init",
+        action="store_true",
+        help="execute -x/-X action on first check, by default actions are run when plan status change",
+    )
+    parser.add_argument(
         "plans", nargs="*", help="plans to check, example 1801sk13 or 1801sk14"
     )
     args = parser.parse_args()
@@ -112,16 +143,17 @@ def main():
             for zref in pref["zones"]:
                 zones.add(zref["zone"])
         print("List of plans:")
-        for p in sorted(plans):
-            print(" ", p)
+        for plan in sorted(plans):
+            print(" ", plan)
         print("List of zones:")
-        for z in sorted(zones):
-            print(" ", z)
+        for zone in sorted(zones):
+            print(" ", zone)
     else:
         availability = None
         while True:
             try:
                 if availability is None:
+                    # first loop
                     availability = OrderedDict([(p, None) for p in args.plans])
                 else:
                     sleep(args.sleep)
@@ -132,42 +164,42 @@ def main():
                     availability[plan] = current_zones
                     if previous_zones is None:
                         # No previous data
-                        print(Style.BLUE.apply("."), flush=True, end="")
+                        if len(current_zones) == 0:
+                            message(
+                                Fore.YELLOW,
+                                f"Plan {plan} is initially not available",
+                                prefix="",
+                            )
+                            if (
+                                args.execute_on_init
+                                and execute(args.not_available, plan) is None
+                            ):
+                                args.not_available = None
+                        else:
+                            message(
+                                Fore.GREEN,
+                                f"Plan {plan} is initially available",
+                                prefix="",
+                            )
+                            if (
+                                args.execute_on_init
+                                and execute(args.available, plan) is None
+                            ):
+                                args.available = None
                     elif previous_zones == current_zones:
                         # No change
-                        print(Style.GREEN.apply("."), flush=True, end="")
+                        dot(Fore.GREEN if len(previous_zones) else Fore.YELLOW)
                     elif len(current_zones) == 0:
                         # Not available anymore
-                        print(
-                            Style.PURPLE.apply(
-                                "\n[{date}] Plan {plan} is not available anymore".format(
-                                    date=now(), plan=plan
-                                )
-                            ),
-                            flush=True,
-                        )
+                        message(Fore.YELLOW, f"Plan {plan} is not available anymore")
                         if execute(args.not_available, plan) is None:
                             args.not_available = None
                     else:
                         # Becomes available
-                        print(
-                            Style.GREEN.apply(
-                                "\n[{date}] Plan {plan} is available".format(
-                                    date=now(), plan=plan
-                                )
-                            ),
-                            flush=True,
-                        )
+                        message(Fore.GREEN, f"Plan {plan} is now available")
                         if execute(args.available, plan) is None:
                             args.available = None
             except KeyboardInterrupt:
                 break
-            except BaseException as e:
-                print(
-                    Style.RED.apply("\n[{date}] Error: {e}".format(date=now(), e=e)),
-                    flush=True,
-                )
-
-
-if __name__ == "__main__":
-    main()
+            except BaseException as e:  # pylint: disable=broad-except,invalid-name
+                message(Fore.RED, f"Error: {e}")
